@@ -1,0 +1,16 @@
+{
+  "name": "api-formula1",
+  "version": "1.0.0",
+  "description": "An API project that delivers data on the F1 season",
+  "license": "ISC",
+  "author": "Bruno Azevedo",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "dev": "node --watch .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "express": "^5.2.1"
+  }
+}
