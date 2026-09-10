@@ -1,7 +1,7 @@
 import express from "express";
 import { drivers, generateTeamsArray } from "./data.js";
 import { randomUUID } from "node:crypto";
-import Joi from "joi";
+import { validateDriverInfo, validateUpdateDriverInfo, validatePosition } from "./inputValidation.js";
 
 let teams = generateTeamsArray();
 
@@ -16,12 +16,6 @@ function checkValidDriver(driver) {
   }
 }
 
-const driverSchema = Joi.object({
-  name: Joi.string().min(3).required(),
-  team: Joi.string().min(3).required(),
-  points: Joi.number().min(0).max(1000).default(0),
-});
-
 const app = express();
 
 //Middleware that transforms json from requests int JS objects
@@ -33,15 +27,14 @@ app.get(baseAPIRoute + "/drivers", (request, response) => {
 });
 
 //Gets the full list of teams
-app.get(baseAPIRoute+'/teams', (request, response)=>{
-    response.status(200).send(teams);
-})
+app.get(baseAPIRoute + "/teams", (request, response) => {
+  response.status(200).send(teams);
+});
 
 //A GET request to /drivers/standings/2 would return the driver in second place
 app.get(baseAPIRoute + "/drivers/standings/:position", (request, response) => {
-  const positionSchema = Joi.number.min(1).max(drivers.length);
   const position = Number(request.params.position);
-  const error = positionSchema.validate(position, { abortEarly: false });
+  const error = validatePosition(drivers, position);
   if (error) {
     response.status(400).send(error);
     return;
@@ -50,17 +43,15 @@ app.get(baseAPIRoute + "/drivers/standings/:position", (request, response) => {
 });
 
 //A GET request to /teams/standings/2 would return the team in second place
-app.get(baseAPIRoute + "/drivers/standings/:position", (request, response) => {
-  const positionSchema = Joi.number.min(1).max(teams.length);
+app.get(baseAPIRoute + "/teams/standings/:position", (request, response) => {
   const position = Number(request.params.position);
-  const error = positionSchema.validate(position, { abortEarly: false });
+  const error = validatePosition(teams, position)
   if (error) {
     response.status(400).send(error);
     return;
   }
   response.status(200).send(teams[position - 1]);
 });
-
 
 //Gets the driver by his ID
 app.get(baseAPIRoute + "/drivers/:id", (request, response) => {
@@ -72,7 +63,7 @@ app.get(baseAPIRoute + "/drivers/:id", (request, response) => {
 
 // Adds a new driver to the database based on a JSON with name, points and team provided by the request
 app.post(baseAPIRoute + "/drivers", (request, response) => {
-  const { error } = driverSchema.validate(request.body, { abortEarly: false });
+  const { error } = validateDriverInfo(request.body);
   if (error) {
     response
       .status(400)
@@ -91,13 +82,8 @@ app.post(baseAPIRoute + "/drivers", (request, response) => {
 
 //Receives a request that specifies the driver it wants to alter selecting it by it's ID
 app.put(baseAPIRoute + "/drivers/:id", (request, response) => {
-  const updateDriverSchema = Joi.object({
-    name: Joi.string().min(3),
-    team: Joi.string().min(3),
-    points: Joi.number().min(0).max(1000).default(0),
-  }).min(1); //.min(1) at the end makes it so the request body must have at least 1 parameter, otherwise the put request makes no sense
-  const {error} = updateDriverSchema.validate(request.body, { abortEarly: false });
-  if(error){
+  const { error } = validateUpdateDriverInfo(request.body);
+  if (error) {
     response.status(400).send(error);
     return;
   }
