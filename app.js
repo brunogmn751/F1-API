@@ -1,6 +1,7 @@
 import express from "express";
 import { drivers } from "./data.js";
 import { randomUUID } from "node:crypto";
+import { request } from "node:http";
 
 const baseAPIRoute = "/api/v1";
 
@@ -37,6 +38,21 @@ drivers.push(newDriver);
 drivers.sort((a, b) => b.points - a.points);
 response.status(200).send(newDriver);
 })
+
+//Receives a request that specifies the driver it wants to alter selecting it by it's ID 
+app.put(baseAPIRoute + '/drivers/:id', (request, response)=>{
+    const {id} = request.params;
+    const selectedDriver = drivers.find(driver => driver.id === id);
+
+    for (const key in selectedDriver){
+        if(request.body[key]){
+            selectedDriver[key] = request.body(key);
+        }
+    }
+    response.status(200).send(selectedDriver)
+})
+
+
 
 const port = 3000;
 
