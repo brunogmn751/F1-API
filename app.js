@@ -1,7 +1,9 @@
 import express from "express";
-import { drivers, teams } from "./data.js";
+import { drivers, generateTeamsArray } from "./data.js";
 import { randomUUID } from "node:crypto";
 import Joi from "joi";
+
+let teams = generateTeamsArray();
 
 const baseAPIRoute = "/api/v1";
 
@@ -83,6 +85,7 @@ app.post(baseAPIRoute + "/drivers", (request, response) => {
   const newDriver = { ...request.body, id: randomUUID() };
   drivers.push(newDriver);
   drivers.sort((a, b) => b.points - a.points);
+  teams = generateTeamsArray();
   response.status(200).send(newDriver);
 });
 
@@ -108,6 +111,7 @@ app.put(baseAPIRoute + "/drivers/:id", (request, response) => {
       selectedDriver[key] = request.body(key);
     }
   }
+  teams = generateTeamsArray();
   response.status(200).send(selectedDriver);
 });
 
@@ -118,6 +122,7 @@ app.delete(baseAPIRoute + "/drivers/:id", (request, response) => {
   checkValidDriver(selectedDriver);
   const index = drivers.indexOf(selectedDriver);
   drivers.splice(index, 1);
+  teams = generateTeamsArray();
   response.status(200).send(drivers);
 });
 
