@@ -1,116 +1,19 @@
 import express from "express";
-import { drivers, generateTeamsArray } from "./data.js";
-import { randomUUID } from "node:crypto";
-import { validateDriverInfo, validateUpdateDriverInfo, validatePosition } from "./inputValidation.js";
+import driversRouter from "./routes/drivers.js";
+import teamsRouter from "./routes/teams.js";
 
-let teams = generateTeamsArray();
-
-const baseAPIRoute = "/api/v1";
-
-function checkValidDriver(driver) {
-  if (!driver) {
-    response
-      .status(404)
-      .send("The ID provided does'nt correspond to a driver on the database");
-    return;
-  }
-}
+const baseAPIRoute = '/api/v1';
 
 const app = express();
 
-//Middleware that transforms json from requests int JS objects
 app.use(express.json());
+app.use(baseAPIRoute + '/drivers', driversRouter)
+app.use(baseAPIRoute + '/teams', teamsRouter)
 
-//Gets the full list of drivers
-app.get(baseAPIRoute + "/drivers", (request, response) => {
-  response.status(200).send(drivers);
-});
 
-//Gets the full list of teams
-app.get(baseAPIRoute + "/teams", (request, response) => {
-  response.status(200).send(teams);
-});
 
-//A GET request to /drivers/standings/2 would return the driver in second place
-app.get(baseAPIRoute + "/drivers/standings/:position", (request, response) => {
-  const position = Number(request.params.position);
-  const error = validatePosition(drivers, position);
-  if (error) {
-    response.status(400).send(error);
-    return;
-  }
-  response.status(200).send(drivers[position - 1]);
-});
+//Middleware that transforms json from requests int JS objects
 
-//A GET request to /teams/standings/2 would return the team in second place
-app.get(baseAPIRoute + "/teams/standings/:position", (request, response) => {
-  const position = Number(request.params.position);
-  const error = validatePosition(teams, position)
-  if (error) {
-    response.status(400).send(error);
-    return;
-  }
-  response.status(200).send(teams[position - 1]);
-});
-
-//Gets the driver by his ID
-app.get(baseAPIRoute + "/drivers/:id", (request, response) => {
-  const { id } = request.params;
-  const selectedDriver = drivers.find((driver) => driver.id === id);
-  checkValidDriver(selectedDriver);
-  response.status(200).send(selectedDriver);
-});
-
-// Adds a new driver to the database based on a JSON with name, points and team provided by the request
-app.post(baseAPIRoute + "/drivers", (request, response) => {
-  const { error } = validateDriverInfo(request.body);
-  if (error) {
-    response
-      .status(400)
-      .send(
-        "It is required to provide a Name and a Team to register a new driver" +
-          error,
-      );
-    return;
-  }
-  const newDriver = { ...request.body, id: randomUUID() };
-  drivers.push(newDriver);
-  drivers.sort((a, b) => b.points - a.points);
-  teams = generateTeamsArray();
-  response.status(200).send(newDriver);
-});
-
-//Receives a request that specifies the driver it wants to alter selecting it by it's ID
-app.put(baseAPIRoute + "/drivers/:id", (request, response) => {
-  const { error } = validateUpdateDriverInfo(request.body);
-  if (error) {
-    response.status(400).send(error);
-    return;
-  }
-
-  const { id } = request.params;
-  const selectedDriver = drivers.find((driver) => driver.id === id);
-  checkValidDriver(selectedDriver);
-
-  for (const key in selectedDriver) {
-    if (request.body[key]) {
-      selectedDriver[key] = request.body(key);
-    }
-  }
-  teams = generateTeamsArray();
-  response.status(200).send(selectedDriver);
-});
-
-//Deletes a pilot based on his ID and then returns the updated list of drivers
-app.delete(baseAPIRoute + "/drivers/:id", (request, response) => {
-  const { id } = request.params;
-  const selectedDriver = drivers.find((driver) => driver.id === id);
-  checkValidDriver(selectedDriver);
-  const index = drivers.indexOf(selectedDriver);
-  drivers.splice(index, 1);
-  teams = generateTeamsArray();
-  response.status(200).send(drivers);
-});
 
 const port = 3000;
 

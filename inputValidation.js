@@ -13,12 +13,12 @@ const updateDriverSchema = Joi.object({
 }).min(1);
 
 function generatePositionSchema(array) {
-  Joi.number.min(1).max(array.length);
+  return Joi.number().min(1).max(array.length);
 }
 
 function validation(schema){
     return function (info){
-        schema.validate(info, { abortEarly: false });
+        return schema.validate(info, { abortEarly: false });
     }
 }
 
