@@ -5,7 +5,12 @@ import { request } from "node:http";
 
 const baseAPIRoute = "/api/v1";
 
-function sortList(){}
+function checkValidDriver(driver){
+    if(!driver){
+        response.status(404).send("The ID provided does'nt correspond to a driver on the database");
+        return;
+    }
+}
 
 const app = express();
 
@@ -27,6 +32,7 @@ app.get(baseAPIRoute+'/drivers/standings/:position', (request, response)=>{
 app.get(baseAPIRoute+'/drivers/:id' ,(request, response)=>{
     const {id} = request.params;
     const selectedDriver = drivers.find(driver => driver.id === id);
+    checkValidDriver(selectedDriver);
     response.status(200).send(selectedDriver);
 })
 
@@ -43,7 +49,7 @@ response.status(200).send(newDriver);
 app.put(baseAPIRoute + '/drivers/:id', (request, response)=>{
     const {id} = request.params;
     const selectedDriver = drivers.find(driver => driver.id === id);
-
+    checkValidDriver(selectedDriver)
     for (const key in selectedDriver){
         if(request.body[key]){
             selectedDriver[key] = request.body(key);
@@ -56,6 +62,7 @@ app.put(baseAPIRoute + '/drivers/:id', (request, response)=>{
 app.delete(baseAPIRoute+'/drivers/:id', (request,response)=>{
     const {id} = request.params;
     const selectedDriver = drivers.find(driver => driver.id === id);
+    checkValidDriver(selectedDriver)
     const index = drivers.indexOf(selectedDriver);
     drivers.splice(index,1);
     response.status(200).send(drivers);
