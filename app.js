@@ -52,6 +52,15 @@ app.put(baseAPIRoute + '/drivers/:id', (request, response)=>{
     response.status(200).send(selectedDriver)
 })
 
+//Deletes a pilot based on his ID and then returns the updated list of drivers 
+app.delete(baseAPIRoute+'/drivers/:id', (request,response)=>{
+    const {id} = request.params;
+    const selectedDriver = drivers.find(driver => driver.id === id);
+    const index = drivers.indexOf(selectedDriver);
+    drivers.splice(index,1);
+    response.status(200).send(drivers);
+})
+
 
 
 const port = 3000;
