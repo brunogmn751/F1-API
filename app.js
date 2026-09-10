@@ -1,5 +1,5 @@
 import express from "express";
-import { drivers } from "./data.js";
+import { drivers, teams } from "./data.js";
 import { randomUUID } from "node:crypto";
 import Joi from "joi";
 
@@ -30,7 +30,12 @@ app.get(baseAPIRoute + "/drivers", (request, response) => {
   response.status(200).send(drivers);
 });
 
-//A GET request to /drivers/2 would return the driver in second place
+//Gets the full list of teams
+app.get(baseAPIRoute+'/teams', (request, response)=>{
+    response.status(200).send(teams);
+})
+
+//A GET request to /drivers/standings/2 would return the driver in second place
 app.get(baseAPIRoute + "/drivers/standings/:position", (request, response) => {
   const positionSchema = Joi.number.min(1).max(drivers.length);
   const position = Number(request.params.position);
@@ -41,6 +46,19 @@ app.get(baseAPIRoute + "/drivers/standings/:position", (request, response) => {
   }
   response.status(200).send(drivers[position - 1]);
 });
+
+//A GET request to /teams/standings/2 would return the team in second place
+app.get(baseAPIRoute + "/drivers/standings/:position", (request, response) => {
+  const positionSchema = Joi.number.min(1).max(teams.length);
+  const position = Number(request.params.position);
+  const error = positionSchema.validate(position, { abortEarly: false });
+  if (error) {
+    response.status(400).send(error);
+    return;
+  }
+  response.status(200).send(teams[position - 1]);
+});
+
 
 //Gets the driver by his ID
 app.get(baseAPIRoute + "/drivers/:id", (request, response) => {

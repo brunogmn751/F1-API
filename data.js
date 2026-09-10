@@ -135,7 +135,7 @@ class Team {
     this.points = points;
   }
 }
-const team = drivers.reduce((teamsArray, driver)=>{
+export const teams = drivers.reduce((teamsArray, driver)=>{
 if(!teamsArray.find(team => team.team === driver.team)){
   const newTeam = new Team(driverTeam, driver.points);
   teamsArray.push(newTeam);
