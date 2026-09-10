@@ -128,3 +128,20 @@ const unorderedDrivers = [
 ];
 
 export const drivers = unorderedDrivers.sort((a, b) => b.points - a.points);
+
+class Team {
+  constructor(team, points){
+    this.team = team;
+    this.points = points;
+  }
+}
+const team = drivers.reduce((teamsArray, driver)=>{
+if(!teamsArray.find(team => team.team === driver.team)){
+  const newTeam = new Team(driverTeam, driver.points);
+  teamsArray.push(newTeam);
+}else{
+  const currentTeam = teamsArray.find(team => team.team === driver.team);
+   currentTeam.points += driver.points;
+}
+return teamsArray;
+}, []).sort((a, b) => b.points - a.points);
