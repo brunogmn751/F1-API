@@ -1,7 +1,11 @@
 import express from "express";
 import { drivers } from "../data.js";
 import { randomUUID } from "node:crypto";
-import { validateDriverInfo, validateUpdateDriverInfo, validatePosition } from "../inputValidation.js";
+import {
+  validateDriverInfo,
+  validateUpdateDriverInfo,
+  validatePosition,
+} from "../inputValidation.js";
 
 const router = express.Router();
 
@@ -10,19 +14,16 @@ router.get("/", (request, response) => {
   response.status(200).send(drivers);
 });
 
-
 //A GET request to /drivers/standings/2 would return the driver in second place
 router.get("/standings/:position", (request, response) => {
   const position = Number(request.params.position);
-  const {error} = validatePosition(drivers, position);
+  const { error } = validatePosition(drivers, position);
   if (error) {
     response.status(400).send(error);
     return;
   }
   response.status(200).send(drivers[position - 1]);
 });
-
-
 
 //Gets the driver by his ID
 router.get("/:id", (request, response) => {
@@ -39,7 +40,7 @@ router.get("/:id", (request, response) => {
 
 // Adds a new driver to the database based on a JSON with name, points and team provided by the request
 router.post("/", (request, response) => {
-  const { error } = validateDriverInfo(request.body);
+  const { error, value } = validateDriverInfo(request.body);
   if (error) {
     response
       .status(400)
@@ -49,7 +50,7 @@ router.post("/", (request, response) => {
       );
     return;
   }
-  const newDriver = { ...request.body, id: randomUUID() };
+  const newDriver = { ...value, id: randomUUID() };
   drivers.push(newDriver);
   drivers.sort((a, b) => b.points - a.points);
   response.status(200).send(newDriver);
@@ -71,7 +72,6 @@ router.put("/:id", (request, response) => {
       .send("The ID provided does'nt correspond to a driver on the database");
     return;
   }
- 
 
   for (const key in selectedDriver) {
     if (request.body[key]) {
