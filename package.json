@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "express": "^5.2.1",
+    "helmet": "^8.3.0",
     "joi": "^18.2.8"
   }
 }
