@@ -71,14 +71,15 @@ router.put("/:id", (request, response, next) => {
     response
       .status(404)
       .send("The ID provided does'nt correspond to a driver on the database");
-    return next(err);
+    return;
   }
 
   for (const key in selectedDriver) {
-    if (request.body[key]) {
+    if (request.body[key] !== undefined) {
       selectedDriver[key] = request.body[key];
     }
   }
+  drivers.sort((a, b) => b.points - a.points);
   response.status(200).send(selectedDriver);
 });
 
